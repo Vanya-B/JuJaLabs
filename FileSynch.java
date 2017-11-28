@@ -36,31 +36,43 @@ public class FileSynch {
             }
 
             File src = new File(sourcePath);
-            File [] srcFiles = src.listFiles();
-            for (File sFile: srcFiles) {
-                if (!containsFile(dest, sFile)) {
-                    File newFile = new File(dest.toPath() + "/" + sFile.getName());
-                    Files.copy(sFile.toPath(), newFile.toPath());
+            for (File sFile: src.listFiles()) {
+                if (sFile.isFile()) {
+                    if (!containsFile(dest, sFile)) {
+                        File newFile = new File(dest.toPath() + "/" + sFile.getName());
+                        Files.copy(sFile.toPath(), newFile.toPath());
+                    } else {
+                        File dFile = getFileFromDirectory(dest, sFile);
+                        if (dFile.length() != sFile.length()) {
+                            Files.delete(dFile.toPath());
+                            Files.copy(sFile.toPath(), dFile.toPath());
+                        }
+                    }
                 }
 
             }
-
-
-
         } else {
             throw new IllegalArgumentException("source directory doesn't exist");
         }
     }
 
     private static boolean containsFile(File directry, File file) {
-        if (file.isFile()) {
-            File [] destFiles = directry.listFiles();
-            for (File dFile : destFiles) {
-                if (dFile.getName().equals(file.getName())) {
-                    return true;
-                }
+        for (File dFile : directry.listFiles()) {
+            if (dFile.getName().equals(file.getName())) {
+                return true;
             }
         }
         return false;
+    }
+
+    private static File getFileFromDirectory (File directory, File file) {
+        if (directory.isDirectory()) {
+            for (File dFile: directory.listFiles()) {
+                if (dFile.getName().equals(file.getName())) {
+                    return dFile;
+                }
+            }
+        }
+        return null;
     }
 }
