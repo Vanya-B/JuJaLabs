@@ -12,13 +12,7 @@ public class FileSynch {
 
     static int remove, add, update = 0;
     public static void main(String[] args) {
-        if (args == null || args.length == 0) {
-            throw new IllegalArgumentException("no parameters : source, destination");
-        }
-
-        if (args.length != 2) {
-            throw new IllegalArgumentException("wrong number of parameters");
-        }
+        checkParameters(args);
 
         String sourcePath = args[0];
         String destinationPath = args[1];
@@ -56,6 +50,16 @@ public class FileSynch {
 
         } else {
             throw new IllegalArgumentException("source directory doesn't exist");
+        }
+    }
+
+    private static void checkParameters (String[] parameters) {
+        if (parameters == null || parameters.length == 0) {
+            throw new IllegalArgumentException("no parameters : source, destination");
+        }
+
+        if (parameters.length != 2) {
+            throw new IllegalArgumentException("wrong number of parameters");
         }
     }
 
