@@ -1,7 +1,6 @@
 package ua.com.juja.core.FileSynch;
 
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
@@ -10,7 +9,7 @@ import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 
 public class FileSynch {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         if (args == null || args.length == 0) {
             throw new IllegalArgumentException("no parameters : source, destination");
         }
@@ -21,6 +20,15 @@ public class FileSynch {
 
         String sourcePath = args[0];
         String destinationPath = args[1];
+        try {
+            synchFile(sourcePath, destinationPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void synchFile (String sourcePath, String destinationPath) throws IOException {
         boolean isSrcExist = Files.exists(Paths.get(sourcePath), NOFOLLOW_LINKS);
         if (isSrcExist) {
             File dest = null;
@@ -36,6 +44,7 @@ public class FileSynch {
             }
 
             File src = new File(sourcePath);
+            removeFiles(src, dest);
             for (File sFile: src.listFiles()) {
                 if (sFile.isFile()) {
                     if (!containsFile(dest, sFile)) {
@@ -50,9 +59,27 @@ public class FileSynch {
                     }
                 }
 
+                if (sFile.isDirectory()) {
+                    if (!containsFile(dest, sFile)) {
+                        File newFile = new File(dest.toPath() + "/" + sFile.getName());
+                        Files.copy(sFile.toPath(), newFile.toPath());
+                    } else {
+                        File dFile = getFileFromDirectory(dest, sFile);
+                        synchFile(sFile.getPath(), dFile.getPath());
+                    }
+                }
+
             }
         } else {
             throw new IllegalArgumentException("source directory doesn't exist");
+        }
+    }
+
+    private static void removeFiles(File srcFile, File dest) throws IOException {
+        for (File dFile: dest.listFiles()) {
+            if (!containsFile(srcFile, dFile)){
+                Files.delete(dFile.toPath());
+            }
         }
     }
 
